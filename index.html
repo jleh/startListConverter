@@ -59,6 +59,8 @@
 
         xml += "</StartList>";
         document.getElementById("output").value = xml;
+
+        createFile();
     }
 
     function printRunner(runner) {
@@ -85,6 +87,17 @@
         xml += "<Date>2" + startDate + "</Date><Time>15:00:00+03:00</Time></EndTime></Event>";
 
         return xml;
+    }
+
+    function createFile() {
+        var xml = document.getElementById("output").value;
+        var blob = new Blob([xml], { type: "application/xml" });
+        var link = document.createElement("a");
+
+        document.getElementById("download").innerHTML = "";
+        link.innerHTML = "Download XML file";
+        link.href = window.URL.createObjectURL(blob);
+        document.getElementById("download").appendChild(link);
     }
     </script>
 
@@ -116,6 +129,8 @@
             <label>Output XML</label>
             <textarea class="form-control" id="output" rows="5"></textarea>
         </div>
+
+        <div id="download"></div>
     </div>
 </body>
 </html>
