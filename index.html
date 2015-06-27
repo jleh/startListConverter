@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IOF XML converter</title>
+
+    <script type="text/javascript">
+    function convert() {
+        startDate = document.getElementById("start-date").value;
+        var input = document.getElementById("input-text").value;
+        var day = document.getElementById("day").value;
+        var rows = input.split("\n");
+        var xml = printHeaders(rows[0]);
+
+        var classes = {};
+
+        for (var i = 0; i < rows.length; i++) {
+
+            if (!/^\s*$/.test(rows[i])) {
+                if (/;*;/.test(rows[i])) {
+                    var row = rows[i].split(";");
+                    var name = row[9].split(" ");
+                    var startTime = row[day].replace(".", ":");
+                    var runner = {
+                        className: row[0],
+                        family: name[0],
+                        given: name[1],
+                        club: row[11],
+                        startNumber: row[3],
+                        startTime: startTime
+                    };
+
+                    if (!/_/.test(runner.startTime)) {
+                        if (!classes[row[0]])
+                            classes[row[0]] = [];
+
+                        classes[row[0]].push(runner);    
+                    }
+
+                    //xml += printRunner(runner);
+                }
+            }
+        }
+
+        var k = 1;
+        for (var clazz in classes) {
+            xml += "<ClassStart>";
+            xml += "<Class><Id>" + k++ + "</Id><Name>" + clazz + "</Name></Class>";
+            xml += "<StartName>Start 1</StartName>";
+
+            for (i = 0; i < classes[clazz].length; i++) {
+                xml += printRunner(classes[clazz][i]);
+            }
+
+            xml += "</ClassStart>";
+        }
+
+        xml += "</StartList>";
+        document.getElementById("output").value = xml;
+    }
+
+    function printRunner(runner) {
+        var xml = "<PersonStart>";
+
+        xml += "<Person>";
+        xml += "<Id>" + runner.startNumber + "</Id>";
+        xml += "<Name><Family>" + runner.family + "</Family><Given>" + runner.given +  "</Given></Name>";
+        xml += "</Person>";
+        xml += "<Organisation><Name>" + runner.club + "</Name></Organisation>";
+        xml += "<Start><BibNumber>" + runner.startNumber + "</BibNumber>";
+        xml += "<StartTime>" + startDate + "T" + runner.startTime + ":00+03:00</StartTime></Start>";
+        xml += "</PersonStart>";
+
+        return xml;
+    }
+
+    function printHeaders(eventName) {
+        var xml = '<StartList xmlns="http://www.orienteering.org/datastandard/3.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" iofVersion="3.0" createTime="' + startDate +'T00:00:00+03:00" creator="JS converter">';
+
+        xml += "<Event><Name>" + eventName + "</Name>";
+
+        xml += "<StartTime><Date>" + startDate + "</Date><Time>09:00:00+03:00</Time></StartTime><EndTime>";
+        xml += "<Date>2" + startDate + "</Date><Time>15:00:00+03:00</Time></EndTime></Event>";
+
+        return xml;
+    }
+    </script>
+
+</head>
+<body>
+    <label for="start-date">Competition date</label>
+    <input id="start-date" value="2015-06-27"><br>
+    <label for="day">Day</label>
+    <input id="day" value="1"><br>
+
+    Input startlist<br>
+    <textarea id="input-text" cols="100" rows="20"></textarea>
+    <br>
+    <button onclick="convert();">Convert</button><br>
+    Output XML<br>
+    <textarea id="output" cols="100" rows="30"></textarea>
+</body>
+</html>
